@@ -1,5 +1,4 @@
-import { createStore } from 'vuex'
-
+import { createStore } from 'vuex';
 export default createStore({
   state: {
     userInfo: {
@@ -10,6 +9,7 @@ export default createStore({
   getters: {
     getUserInfo: state => state.userInfo
   },
+  //对state的直接修改操作
   mutations: {
     updateAvatar(state, newAvatar) {
       state.userInfo.avatar = newAvatar
