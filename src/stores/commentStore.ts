@@ -113,6 +113,9 @@ export const useCommentStore = defineStore('comment', () => {
         token,
         userInfo,
         // 方法
+        postComment,
+        fetchCommentList,
+        deleteComment
     };
 }, {
     persist: true,
