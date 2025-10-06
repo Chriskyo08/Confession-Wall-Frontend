@@ -54,7 +54,9 @@ export const useUserStore = defineStore('user', () => {
       // 保存 token 和用户信息
       token.value = response.data.data.token;
       localStorage.setItem('token', token.value);
-      await fetchUserInfo();
+
+      const resp = await fetchUserInfo();
+      localStorage.setItem('userInfo', JSON.stringify(resp.data));
 
       return {
         success: true,
