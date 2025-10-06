@@ -3,7 +3,7 @@
     <div class="navbar-container">
       <div class="navbar-left">
         <router-link to="/" class="navbar-brand">
-          <img src="@/assets/icons/sparkling-heart.png" alt="Sparkling Heart" class="navbar-logo" />
+          <img src="/sparkling-heart.png" alt="Sparkling Heart" class="navbar-logo" />
           <span class="navbar-title">表白墙</span>
         </router-link>
         <ul class="navbar-links">
