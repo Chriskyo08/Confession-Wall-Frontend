@@ -117,7 +117,7 @@ export const useUserStore = defineStore('user', () => {
         params: { user_id: userId }
       });
 
-      if (response.data.code === 200) {
+      if (response.status === 200) {
         return { success: true, data: response.data.data };
       } else {
         return { success: false, message: response.data.msg };
@@ -139,7 +139,7 @@ export const useUserStore = defineStore('user', () => {
         nickname: newNickname
       });
 
-      if (response.data.code === 200 && response.data.data) {
+      if (response.status === 200 && response.data.data) {
         // 更新本地用户信息
         if (userInfo.value) {
           userInfo.value.nickname = response.data.data.nickname;
@@ -163,7 +163,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await request.put<UpdatePasswordResponse>('/api/user/password', passwordRequest);
 
-      if (response.data.code === 200) {
+      if (response.status === 200) {
         // 如果返回了新的 token，更新本地 token
         if (response.data.token) {
           token.value = response.data.token;
@@ -193,7 +193,7 @@ export const useUserStore = defineStore('user', () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      if (response.data.code === 200) {
+      if (response.status === 200) {
         // 更新本地用户信息
         if (userInfo.value) {
           userInfo.value.avatar = response.data.data.avatar;
@@ -217,7 +217,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await request.post<BlockUserResponse>('/api/blacklist/add', { user_id: userId });
 
-      if (response.data.code === 200) {
+      if (response.status === 200) {
         return { success: true, message: response.data.msg };
       } else {
         return { success: false, message: response.data.msg };
@@ -237,7 +237,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await request.post<UnblockUserResponse>('/api/blacklist/remove', { user_id: userId });
 
-      if (response.data.code === 200) {
+      if (response.status === 200) {
         return { success: true, message: response.data.msg };
       } else {
         return { success: false, message: response.data.msg };
@@ -257,7 +257,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await request.get<BlacklistResponse>('/api/blacklist/list');
 
-      if (response.data.code === 200) {
+      if (response.status === 200) {
         return { success: true, data: response.data.data.userList };
       } else {
         return { success: false, message: response.data.total };
