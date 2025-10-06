@@ -12,9 +12,14 @@
             <span class="rank-number" :class="getRankClass(index)">{{ index + 1 }}</span>
           </div>
           <div class="confession-main">
-            <router-link :to="`/user/${confession.userId}`" class="avatar-link">
+            <!-- 匿名表白不显示超链接 -->
+            <router-link v-if="!confession.Anonymous" :to="`/user/${confession.userId}`" class="avatar-link">
               <img :src="confession.userAvatar || '/default-avatar.jpg'" :alt="confession.authorName" class="author-avatar">
             </router-link>
+            <!-- 匿名表白只显示默认头像，不可点击 -->
+            <div v-else class="avatar-container">
+              <img :src="'/default-avatar.jpg'" alt="匿名用户" class="author-avatar">
+            </div>
             <div class="confession-content">
               <div class="content-main">
                 <div class="content-left">
@@ -31,11 +36,16 @@
                       </span>
                     </div>
                     <div>
-                      <router-link :to="`/user/${confession.userId}`" class="author-link">
+                      <!-- 非匿名表白显示用户链接 -->
+                      <router-link v-if="!confession.Anonymous" :to="`/user/${confession.userId}`" class="author-link">
                         <span class="author-name">
-                          {{ confession.Anonymous ? '匿名用户' : (confession.userName || `用户 #${confession.userId}`) }}
+                          {{ confession.userName || `用户 #${confession.userId}` }}
                         </span>
                       </router-link>
+                      <!-- 匿名表白只显示文字，不可点击 -->
+                      <span v-else class="author-name anonymous">
+                        匿名用户
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -258,6 +268,13 @@ onMounted(() => {
   height: 76px;
 }
 
+.avatar-container {
+  display: block;
+  position: relative;
+  width: 76px;
+  height: 76px;
+}
+
 .avatar-link::after {
   content: '';
   position: absolute;
@@ -359,6 +376,11 @@ onMounted(() => {
 .author-name {
   font-size: 0.9rem;
   color: inherit;
+}
+
+.author-name.anonymous {
+  color: #999;
+  font-style: italic;
 }
 
 .content-right {
