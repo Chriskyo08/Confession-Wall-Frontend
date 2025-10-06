@@ -120,7 +120,8 @@ const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const confessionStore = useConfessionStore();
-const userId = ref(route.params.userId);
+// 优先用路由参数，没有则用当前登录用户
+const userId = ref(route.params.userId || userStore.userInfo?.data?.user_id || '');
 const userProfile = ref(null);
 const confessions = ref([]);
 const currentPage = ref(1);
@@ -128,7 +129,7 @@ const pageLimit = ref(10);
 const totalPages = ref(0);
 
 const isCurrentUserProfile = computed(() => {
-  return userStore.userInfo && userStore.userInfo.user_id.toString() === userId.value;
+  return userStore.userInfo && userStore.userInfo.data?.user_id?.toString() === userId.value;
 });
 
 // 格式化日期
@@ -149,11 +150,11 @@ const formatDate = (dateString) => {
 const fetchUserProfile = async () => {
   try {
     // 如果是当前用户，直接使用 store 中的信息
-    if (userStore.userInfo && userStore.userInfo.user_id.toString() === userId.value) {
-      userProfile.value = userStore.userInfo;
+    if (userStore.userInfo && userStore.userInfo.data?.user_id?.toString() === userId.value) {
+      userProfile.value = userStore.userInfo.data;
     } else {
       const response = await request.get(`/api/user/profile`, {
-        params: { user_id: userId.value }
+  params: { user_id: userId.value }
       });
       userProfile.value = response.data;
     }
@@ -180,10 +181,16 @@ const fetchAuthorInfo = async (userId) => {
 };
 
 const fetchConfessions = async () => {
+  // user_id 判空，避免 undefined 请求
+  const uid = userId.value || userStore.userInfo?.data?.user_id;
+  if (!uid) {
+    console.warn('用户ID未获取到，无法加载表白列表');
+    return;
+  }
   try {
     const response = await request.get('/api/confession/user', {
       params: {
-        user_id: userId.value,
+  user_id: uid,
         page: currentPage.value,
         pageLimit: pageLimit.value
       }
@@ -233,7 +240,7 @@ const deleteConfessionHandler = async (confessionId) => {
       if (result.success) {
         alert('表白删除成功！');
         // 跳转到个人主页
-        router.push(`/user/${userStore.userInfo.user_id}`);
+  router.push(`/user/${userStore.userInfo.data?.user_id}`);
       } else {
         alert(result.message || '删除失败，请重试');
       }
@@ -246,7 +253,7 @@ const deleteConfessionHandler = async (confessionId) => {
 
 // 监听路由参数变化
 watch(() => route.params.userId, (newId) => {
-  userId.value = newId;
+  userId.value = newId || userStore.userInfo?.data?.user_id || '';
   currentPage.value = 1;
   fetchUserProfile();
   fetchConfessions();
@@ -259,6 +266,7 @@ watch([currentPage, pageLimit], () => {
 
 // 初始化
 onMounted(() => {
+  userId.value = route.params.userId || userStore.userInfo?.data?.user_id || '';
   fetchUserProfile();
   fetchConfessions();
 });
