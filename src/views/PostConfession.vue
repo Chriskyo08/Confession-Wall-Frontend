@@ -471,8 +471,7 @@ onMounted(() => {
 }
 
 .datetime-input {
-  width: 100%;
-  max-width: 300px;
+  width: 12rem;
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;

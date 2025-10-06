@@ -137,7 +137,7 @@ const fetchUserProfile = async () => {
       userProfile.value = response.data;
     }
     // 更新页面标题
-    document.title = `${userProfile.value.username} 的个人主页`;
+    document.title = `${userProfile.value.nickname} 的个人主页 - 表白墙`;
   } catch (error) {
     console.error('获取用户信息失败:', error);
   }

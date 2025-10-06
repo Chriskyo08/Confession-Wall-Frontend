@@ -110,7 +110,7 @@ const router = createRouter({
 // 全局前置守卫
 router.beforeEach((to, from, next) => {
   if (to.meta.title) {
-    document.title = to.meta.title + '- 表白墙';
+    document.title = to.meta.title + ' - 表白墙';
   } else {
     document.title = '默认标题';
   }
