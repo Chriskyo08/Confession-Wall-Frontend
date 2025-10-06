@@ -79,7 +79,7 @@ export const useUserStore = defineStore('user', () => {
 
     // 清除 localStorage 中的数据
     localStorage.removeItem('token');
-    localStorage.removeItem('user-store');
+    localStorage.removeItem('userInfo');
 
     // 如果提供了 router，则进行重定向
     if (router) {
