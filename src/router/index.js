@@ -6,8 +6,11 @@ import Register from '@/views/Register.vue';
 import Login from '@/views/Login.vue';
 import Profile from '@/views/Profile.vue';
 import Setting from '@/views/Setting.vue';
-import Post from '@/views/Post.vue';
-import Publish from '@/views/Publish.vue';
+import Confession from '@/views/Confession.vue';
+import EditConfession from '@/views/EditConfession.vue';
+import PostConfession from '@/views/PostConfession.vue';
+import Square from '@/views/Square.vue';
+import HotList from '@/views/HotList.vue';
 
 const routes = [
   {
@@ -56,21 +59,45 @@ const routes = [
     }
   },
   {
-    path: '/post/new',
-    name: 'Publish',
-    component: Publish,
+    path: '/confession/new',
+    name: 'PostConfession',
+    component: PostConfession,
     meta: {
       title: '新建表白',
       requiresAuth: true
     }
   },
   {
-    path: '/post/:postId',
-    name: 'Post',
-    component: Post,
+    path: '/confession/:confessionId',
+    name: 'Confession',
+    component: Confession,
     meta: {
-      title: '首页',
+      dynamicTitle: true,
       requiresAuth: true
+    }
+  }, {
+    path: '/confession/:confessionId/edit',
+    name: 'EditConfession',
+    component: EditConfession,
+    meta: {
+      title: '编辑表白',
+      requiresAuth: true
+    }
+  }, {
+    path: '/square',
+    name: 'Square',
+    component: Square,
+    meta: {
+      title: '表白广场',
+      requiresAuth: false
+    }
+  }, {
+    path: '/hotlist',
+    name: 'HotList',
+    component: HotList,
+    meta: {
+      title: '表白热度榜',
+      requiresAuth: false
     }
   }
 ];

@@ -7,8 +7,10 @@
           <span class="navbar-title">表白墙</span>
         </router-link>
         <ul class="navbar-links">
-          <li><router-link to="/post/new"><img src="@/assets/icons/heart-24.svg" alt="表白" height="20">表白</router-link></li>
-          <li><router-link :to="'/user/' + userStore.userInfo?.user_id"><img src="@/assets/icons/person-24.svg" alt="个人主页" height="20">主页</router-link></li>
+          <li><router-link to="/square"><img src="@/assets/icons/heart-24.svg" alt="表白广场" height="20">表白广场</router-link></li>
+          <li><router-link to="/hotlist"><img src="@/assets/icons/flame-24.svg" alt="表白热度榜" height="20">表白热度榜</router-link></li>
+          <li><router-link to="/confession/new"><img src="@/assets/icons/paper-airplane-24.svg" alt="新建表白" height="20">新建表白</router-link></li>
+          <li><router-link :to="'/user/' + userStore.userInfo?.user_id"><img src="@/assets/icons/person-24.svg" alt="个人主页" height="20">我的表白</router-link></li>
         </ul>
       </div>
 
@@ -174,9 +176,17 @@ const handleLogout = () => {
   gap: 0.3rem;
 }
 
+.navbar-links a img {
+  transition: filter 0.3s ease;
+}
+
 .navbar-links a:hover {
   color: #3498db;
   border-color: #3498db;
+}
+
+.navbar-links a:hover img {
+  filter: brightness(0) saturate(100%) invert(57%) sepia(93%) saturate(1352%) hue-rotate(169deg) brightness(101%) contrast(101%);
 }
 
 .user-avatar-container {

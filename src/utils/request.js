@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 创建 axios 实例
 const request = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL, // 从环境变量获取基础URL
+    baseURL: import.meta.env.MODE === 'development' ? '/api' : import.meta.env.VITE_API_BASE_URL, // 开发环境使用代理
     timeout: 5000, // 请求超时时间
     withCredentials: true // 允许跨域请求携带凭证
 });

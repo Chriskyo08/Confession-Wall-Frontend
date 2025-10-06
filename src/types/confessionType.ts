@@ -4,7 +4,7 @@ export interface PostConfessionRequest {
   anonymous: boolean; // 是否匿名
   private: boolean; // 是否私密
   images?: File[]; // 可选，图片文件
-  publish_time?: string; // 可选，发布时间
+  publishTime?: string; // 可选，发布时间
 }
 
 // 发布表白返回值
@@ -12,16 +12,6 @@ export interface PostConfessionResponse {
   code: number;
   msg: string;
   token?: string;
-}
-
-// 更新表白请求
-export interface UpdateConfessionRequest {
-  content: string;
-  anonymous: boolean; // 是否匿名
-  private: boolean; // 是否私密
-  images?: File[];
-  confession_id: number
-  publish_time?: string;
 }
 
 // 更新表白返回值

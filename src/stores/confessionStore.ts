@@ -4,7 +4,6 @@ import request from '@/utils/request';
 import type {
     PostConfessionRequest,
     PostConfessionResponse,
-    UpdateConfessionRequest,
     UpdateConfessionResponse,
     ConfessionListResponse,
     UserConfessionListResponse,
@@ -29,18 +28,49 @@ export const useConfessionStore = defineStore('confession', () => {
     );
 
     // 发布表白方法
-    const publishConfession = async (postConfessionRequest: PostConfessionRequest) => {
+    const publishConfession = async (postData: PostConfessionRequest) => {
         if (!token.value) {
             return { success: false, message: '未登录' };
-        } try {
-            const response = await request.post<PostConfessionResponse>('/api/confession/post', postConfessionRequest);
-            return {
-                success: true,
-                data: response.data,
-                message: response.data.msg || '表白发布成功'
-            };
+        }
+        try {
+            const formData = new FormData();
+            formData.append('content', postData.content);
+            formData.append('anonymous', String(postData.anonymous));
+            formData.append('private', String(postData.private));
+            
+            // 处理图片上传
+            if (postData.images && postData.images.length > 0) {
+                postData.images.forEach((image, index) => {
+                    formData.append('images', image);
+                });
+            }
+            
+            // 处理定时发布时间
+            if (postData.publishTime) {
+                formData.append('publishTime', postData.publishTime);
+            }
+
+            const response = await request.post<PostConfessionResponse>('/api/confession/post', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (response.data.code === 200) {
+                return {
+                    success: true,
+                    data: response.data,
+                    message: response.data.msg || '表白发布成功'
+                };
+            } else {
+                return {
+                    success: false,
+                    data: null,
+                    message: response.data.msg || '表白发布失败'
+                };
+            }
         } catch (error: any) {
-            console.error('注册失败:', error);
+            console.error('发布表白失败:', error);
             return {
                 success: false,
                 data: null,
@@ -50,27 +80,17 @@ export const useConfessionStore = defineStore('confession', () => {
     };
 
     // 更新表白方法
-    const updateConfession = async (updateConfessionRequest: UpdateConfessionRequest) => {
+    const updateConfession = async (content: string, isAnonymous: boolean, isPrivate: boolean, images: File, confessionId: number, publishTime: string) => {
         if (!token.value) {
             return { success: false, message: '未登录' };
         } try {
             const formData = new FormData();
-            formData.append('confession_id', String(updateConfessionRequest.confession_id));
-            formData.append('content', updateConfessionRequest.content);
-            formData.append('anonymous', String(updateConfessionRequest.anonymous));
-            formData.append('private', String(updateConfessionRequest.private));
-
-            // 如果有图片，则添加到 formData
-            if (updateConfessionRequest.images && updateConfessionRequest.images.length > 0) {
-                updateConfessionRequest.images.forEach(image => {
-                    formData.append('images', image);
-                });
-            }
-
-            // 如果有发布时间，则添加到 formData
-            if (updateConfessionRequest.publish_time) {
-                formData.append('publish_time', updateConfessionRequest.publish_time);
-            }
+            formData.append('content', content);
+            formData.append('anonymous', String(isAnonymous));
+            formData.append('private', String(isPrivate));
+            formData.append('images', images || null);
+            formData.append('confession_id', String(confessionId));
+            formData.append('publish_time', publishTime || '');
 
             const response = await request.post<UpdateConfessionResponse>('/api/confession/update', formData, {
                 headers: {
