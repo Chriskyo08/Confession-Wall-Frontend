@@ -1,8 +1,402 @@
 <template>
+  <div class="hotlist-container">
+    <div class="confessions-container">
+      <div class="confessions-header">
+        <h2>表白热度榜</h2>
+        <div class="subtitle">最受欢迎的表白</div>
+      </div>
+
+      <div class="confessions-list" v-if="confessions.length > 0">
+        <div v-for="(confession, index) in confessions" :key="confession.ID" class="confession-item">
+          <div class="rank-badge">
+            <span class="rank-number" :class="getRankClass(index)">{{ index + 1 }}</span>
+          </div>
+          <div class="confession-main">
+            <router-link :to="`/user/${confession.userId}`" class="avatar-link">
+              <img :src="confession.userAvatar || '/default-avatar.jpg'" :alt="confession.authorName" class="author-avatar">
+            </router-link>
+            <div class="confession-content">
+              <div class="content-main">
+                <div class="content-left">
+                  <div class="id-section">
+                    <router-link :to="`/confession/${confession.ID}`" class="confession-id-link">表白 #{{ confession.ID }}</router-link>
+                    <div class="stats">
+                      <span class="stat-item">
+                        <img src="@/assets/icons/eye-24.svg" alt="views" class="stat-icon">
+                        {{ confession.viewCount }}
+                      </span>
+                      <span class="stat-item">
+                        <img src="@/assets/icons/thumbsup-24.svg" alt="likes" class="stat-icon">
+                        {{ confession.likeCount }}
+                      </span>
+                    </div>
+                    <div>
+                      <router-link :to="`/user/${confession.userId}`" class="author-link">
+                        <span class="author-name">
+                          {{ confession.Anonymous ? '匿名用户' : (confession.userName || `用户 #${confession.userId}`) }}
+                        </span>
+                      </router-link>
+                    </div>
+                  </div>
+                </div>
+                <div class="content-right">
+                  <div class="time-info">
+                    <div>发布于 {{ formatDate(confession.publishedAt) }}</div>
+                    <div v-if="confession.changedAt !== confession.publishedAt">
+                      修改于 {{ formatDate(confession.changedAt) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="isLoading" class="loading-state">
+        正在加载热度榜...
+      </div>
+
+      <div v-else class="empty-state">
+        暂无热门表白
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+import { useConfessionStore } from '@/stores/confessionStore';
+import { useUserStore } from '@/stores/userStore';
+
+const confessionStore = useConfessionStore();
+const userStore = useUserStore();
+
+const confessions = ref([]);
+const isLoading = ref(false);
+
+// 格式化日期
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// 获取排名样式类
+const getRankClass = (index) => {
+  if (index === 0) return 'rank-gold';
+  if (index === 1) return 'rank-silver';
+  if (index === 2) return 'rank-bronze';
+  return 'rank-normal';
+};
+
+// 获取热度榜表白列表
+const fetchHotConfessions = async () => {
+  isLoading.value = true;
+  
+  try {
+    const result = await confessionStore.confessionHotList();
+    
+    if (result.success && result.data) {
+      const hotConfessions = result.data;
+      
+      // 直接遍历每个表白，获取用户信息并追加到表白对象中
+      for (const confession of hotConfessions) {
+        // 设置默认用户信息
+        confession.userName = `用户 #${confession.userId}`;
+        confession.userAvatar = '/default-avatar.jpg';
+        
+        // 如果是匿名表白，直接使用默认头像，不获取用户信息
+        if (confession.Anonymous) {
+          confession.userName = '匿名用户';
+          confession.userAvatar = '/default-avatar.jpg';
+        } else {
+          // 非匿名表白才获取用户信息
+          try {
+            const userResult = await userStore.fetchUserById(confession.userId);
+            if (userResult.success && userResult.data) {
+              confession.userName = userResult.data.nickname || `用户 #${confession.userId}`;
+              confession.userAvatar = userResult.data.avatar || '/default-avatar.jpg';
+            }
+          } catch (error) {
+            console.error(`获取用户 #${confession.userId} 信息失败:`, error);
+          }
+        }
+      }
+      
+      confessions.value = hotConfessions;
+    } else {
+      console.error('获取热度榜失败:', result.message);
+      confessions.value = [];
+    }
+  } catch (error) {
+    console.error('获取热度榜失败:', error);
+    confessions.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// 初始化
+onMounted(() => {
+  fetchHotConfessions();
+});
 </script>
 
 <style scoped>
+.hotlist-container {
+  min-height: calc(100vh - 120px);
+}
+
+.confessions-container {
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+}
+
+.confessions-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.confessions-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.confession-item {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.confession-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+}
+
+.rank-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: white;
+}
+
+.rank-gold {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #8b7000;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.rank-silver {
+  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+  color: #666;
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.3);
+}
+
+.rank-bronze {
+  background: linear-gradient(135deg, #cd7f32, #daa520);
+  color: white;
+  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
+}
+
+.rank-normal {
+  background: linear-gradient(135deg, #3498db, #5dade2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+}
+
+.confession-main {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+}
+
+.avatar-link {
+  display: block;
+  text-decoration: none;
+  position: relative;
+  width: 76px;
+  height: 76px;
+}
+
+.avatar-link::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.avatar-link:hover::after {
+  border-color: #3498db;
+}
+
+.author-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.avatar-link:hover .author-avatar {
+  transform: scale(1.05);
+}
+
+.confession-content {
+  flex: 1;
+  padding-left: 1rem;
+}
+
+.content-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.content-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.id-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.confession-id-link {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.confession-id-link:hover {
+  color: #3498db;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.stat-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.author-link {
+  text-decoration: none;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.author-link:hover {
+  color: #3498db;
+}
+
+.author-name {
+  font-size: 0.9rem;
+  color: inherit;
+}
+
+.content-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-height: 60px;
+  justify-content: space-between;
+}
+
+.time-info {
+  font-size: 0.9rem;
+  color: #999;
+  text-align: right;
+  margin-top: auto;
+  align-self: flex-end;
+}
+
+.time-info div {
+  line-height: 1.6;
+  margin-bottom: 0.3rem;
+}
+
+.time-info div:last-child {
+  margin-bottom: 0;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.1rem;
+}
 </style>
