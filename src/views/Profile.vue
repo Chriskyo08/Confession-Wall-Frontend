@@ -59,6 +59,24 @@
                   </div>
                 </div>
                 <div class="content-right">
+                  <!-- 编辑和删除按钮 (仅当前用户可见) -->
+                  <div v-if="isCurrentUserProfile" class="action-buttons">
+                    <button 
+                      @click="editConfession(confession.ID)" 
+                      class="action-btn edit-btn"
+                      title="编辑表白"
+                    >
+                      编辑
+                    </button>
+                    <button 
+                      @click="deleteConfessionHandler(confession.ID)" 
+                      class="action-btn delete-btn"
+                      title="删除表白"
+                    >
+                      删除
+                    </button>
+                  </div>
+                  
                   <div class="time-info">
                     <div>发布于 {{ formatDate(confession.publishedAt) }}</div>
                     <div v-if="confession.changedAt !== confession.publishedAt">
@@ -93,12 +111,15 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
+import { useConfessionStore } from '@/stores/confessionStore';
 import request from '@/utils/request';
 
 const route = useRoute();
+const router = useRouter();
 const userStore = useUserStore();
+const confessionStore = useConfessionStore();
 const userId = ref(route.params.userId);
 const userProfile = ref(null);
 const confessions = ref([]);
@@ -194,6 +215,33 @@ const fetchConfessions = async () => {
 // 切换页码
 const changePage = (page) => {
   currentPage.value = page;
+};
+
+// 编辑表白
+const editConfession = (confessionId) => {
+  router.push(`/confession/${confessionId}/edit`);
+};
+
+// 删除表白
+const deleteConfessionHandler = async (confessionId) => {
+  const confirmed = confirm(`您确定要删除表白 #${confessionId} 吗？`);
+  
+  if (confirmed) {
+    try {
+      const result = await confessionStore.deleteConfession(confessionId);
+      
+      if (result.success) {
+        alert('表白删除成功！');
+        // 跳转到个人主页
+        router.push(`/user/${userStore.userInfo.user_id}`);
+      } else {
+        alert(result.message || '删除失败，请重试');
+      }
+    } catch (error) {
+      console.error('删除表白失败:', error);
+      alert('删除失败，请重试');
+    }
+  }
 };
 
 // 监听路由参数变化
@@ -294,14 +342,14 @@ onMounted(() => {
 }
 
 .avatar-container {
-  margin-bottom: -1.5rem;
+  margin-bottom: -1rem;
   position: relative;
   z-index: 2;
 }
 
 .avatar {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   border: 4px solid white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -482,25 +530,6 @@ onMounted(() => {
   color: inherit;
 }
 
-.content-right {
-  text-align: right;
-  margin-top: 1.5rem;
-}
-
-.time-info {
-  font-size: 0.9rem;
-  color: #999;
-}
-
-.time-info div {
-  line-height: 1.6;
-  margin-bottom: 0.3rem;
-}
-
-.time-info div:last-child {
-  margin-bottom: 0;
-}
-
 .pagination {
   display: flex;
   justify-content: center;
@@ -533,5 +562,69 @@ onMounted(() => {
   padding: 3rem;
   color: #666;
   font-size: 1.1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  padding: 0.3rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 50px;
+}
+
+.edit-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+  transform: translateY(-1px);
+}
+
+.content-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-height: 60px;
+  justify-content: space-between;
+}
+
+.time-info {
+  font-size: 0.9rem;
+  color: #999;
+  text-align: right;
+  margin-top: auto;
+  align-self: flex-end;
+}
+
+.time-info div {
+  line-height: 1.6;
+  margin-bottom: 0.3rem;
+}
+
+.time-info div:last-child {
+  margin-bottom: 0;
 }
 </style>
