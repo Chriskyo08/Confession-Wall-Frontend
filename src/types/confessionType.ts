@@ -30,7 +30,7 @@ export interface Confession {
   Anonymous: boolean; // 是否匿名
   Private: boolean; // 是否私密
   viewCount: number;
-  LikeCount: number;
+  likeCount: number;
   publishedAt: string;
   changedAt: string;
 }

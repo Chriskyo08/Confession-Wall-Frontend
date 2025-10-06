@@ -126,7 +126,7 @@ export const useUserStore = defineStore('user', () => {
       console.error('获取用户信息失败:', error);
       return { success: false, message: '获取用户信息失败' };
     }
-  }
+  };
 
   // 修改昵称
   const updateNickname = async (newNickname: string) => {

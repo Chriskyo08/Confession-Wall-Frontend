@@ -56,7 +56,7 @@ export const useConfessionStore = defineStore('confession', () => {
                 }
             });
 
-            if (response.data.code === 200) {
+            if (response.status === 200) {
                 return {
                     success: true,
                     data: response.data,
@@ -125,7 +125,7 @@ export const useConfessionStore = defineStore('confession', () => {
                 }
             });
 
-            if (response.data.code === 200) {
+            if (response.status === 200) {
                 return {
                     success: true, data: response.data.data, message: response.data.msg || '获取表白列表成功'
                 };
@@ -153,7 +153,7 @@ export const useConfessionStore = defineStore('confession', () => {
                 }
             });
 
-            if (response.data.code === 200) {
+            if (response.status === 200) {
                 return {
                     success: true, data: response.data.data, message: response.data.msg || '获取个人表白列表成功'
                 };
@@ -203,7 +203,7 @@ export const useConfessionStore = defineStore('confession', () => {
                 confession_id: confessionId
             });
 
-            if (response.data.code === 200) {
+            if (response.status === 200) {
                 return {
                     success: true, data: response.data.data, message: response.data.msg || '操作点赞成功'
                 };
@@ -229,7 +229,7 @@ export const useConfessionStore = defineStore('confession', () => {
                 }
             });
 
-            if (response.data.code === 200) {
+            if (response.status === 200) {
                 return {
                     success: true, data: response.data, message: response.data.msg || '删除表白成功'
                 };
