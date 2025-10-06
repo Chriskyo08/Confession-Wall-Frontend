@@ -1,7 +1,7 @@
 <template>
   <div class="box-container">
     <div class="box">
-      <img src="@/assets/icons/sparkling-heart.png" alt="Sparkling Heart" class="logo" />
+      <img src="/sparkling-heart.png" alt="Sparkling Heart" class="logo" />
       <h3>登录账号</h3>
 
       <div class="form">
