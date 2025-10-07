@@ -56,6 +56,7 @@ export const useUserStore = defineStore('user', () => {
       localStorage.setItem('token', token.value);
 
       const resp = await fetchUserInfo();
+      // 只存 data 字段
       localStorage.setItem('userInfo', JSON.stringify(resp.data));
 
       return {
@@ -92,16 +93,16 @@ export const useUserStore = defineStore('user', () => {
     if (!token.value) return;
 
     try {
-      const response = await request.get<UserProfile>('/api/user/profile');
+      // 兼容后端返回结构 { code, data, msg }
+      const response = await request.get<{ code: number; data: UserProfile; msg: string }>('/api/user/profile');
 
       if (response.status === 401) {
         logout();
         return { success: false, message: response.statusText };
       }
 
-
-      userInfo.value = response.data;
-      return { success: true, data: response.data };
+      userInfo.value = response.data.data;
+      return { success: true, data: response.data.data };
     } catch (error: any) {
       console.error('获取用户信息失败:', error);
       // 如果 token 无效，清除登录状态

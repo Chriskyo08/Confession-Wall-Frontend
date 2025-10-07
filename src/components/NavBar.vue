@@ -28,7 +28,7 @@
               <router-link :to="'/user/' + userStore.userInfo?.user_id" class="avatar-link">
                 <div class="avatar-wrapper" @mouseenter="showDropdown = true">
                   <img 
-                    :src="userStore.userInfo?.avatar || '/default-avatar.jpg'" 
+                    :src="normalizeImageUrl(userStore.userInfo?.avatar) || '/default-avatar.jpg'" 
                     :alt="userStore.userInfo?.nickname || '用户头像'" 
                     class="avatar"
                     :class="{ 'avatar-expanded': showDropdown }"
@@ -73,10 +73,12 @@
   </nav>
 </template>
 
+
 <script setup>
 import { ref } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import { useRouter } from 'vue-router';
+import { normalizeImageUrl } from '@/utils/normalizeImageUrl';
 
 const userStore = useUserStore();
 const router = useRouter();

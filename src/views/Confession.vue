@@ -60,7 +60,7 @@
               <img 
                 v-for="(image, index) in confession.images" 
                 :key="index" 
-                :src="image" 
+                :src="normalizeImageUrl(image)" 
                 :alt="`图片 ${index + 1}`" 
                 class="content-image"
               >
@@ -224,6 +224,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useConfessionStore } from '@/stores/confessionStore'
 import { useCommentStore } from '@/stores/commentStore'
 import { useUserStore } from '@/stores/userStore'
+import { normalizeImageUrl } from '@/utils/normalizeImageUrl'
 
 // 路由和store
 const route = useRoute()

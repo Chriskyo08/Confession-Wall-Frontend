@@ -16,7 +16,7 @@
       <div class="form-group">
         <label>头像</label>
         <div class="avatar-section">
-          <img :src="userStore.userInfo?.avatar || '/default-avatar.jpg'" :alt="userStore.userInfo?.username" class="current-avatar">
+          <img :src="normalizeImageUrl(userStore.userInfo?.avatar) || '/default-avatar.jpg'" :alt="userStore.userInfo?.username" class="current-avatar">
           <input
             type="file"
             ref="avatarInput"
@@ -110,7 +110,7 @@
       <div class="blacklist-grid">
         <div v-for="user in blacklist" :key="user.user_id" class="blacklist-item">
           <router-link :to="`/profile/${user.user_id}`" class="avatar-link">
-            <img :src="user.avatar || '/default-avatar.jpg'" :alt="user.username" class="user-avatar">
+            <img :src="normalizeImageUrl(user.avatar) || '/default-avatar.jpg'" :alt="user.username" class="user-avatar">
           </router-link>
           <div class="user-info">
             <div class="username">{{ user.username }}</div>
@@ -129,7 +129,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useUserStore } from '@/stores/userStore';
+
 import { ElMessage } from 'element-plus';
+import { normalizeImageUrl } from '@/utils/normalizeImageUrl';
 
 const userStore = useUserStore();
 

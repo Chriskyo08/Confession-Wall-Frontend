@@ -3,7 +3,7 @@
     <div class="profile-header" :style="{ backgroundImage: 'url(/default-background.jpg)' }">
       <div class="profile-info">
         <div class="avatar-container">
-          <img :src="userProfile?.avatar || '/default-avatar.jpg'" :alt="userProfile?.nickname" class="avatar">
+          <img :src="normalizeImageUrl(userProfile?.avatar) || '/default-avatar.jpg'" :alt="userProfile?.nickname" class="avatar">
         </div>
         <div class="user-info">
           <h1 class="username">{{ userProfile?.nickname || '加载中...' }}</h1>
@@ -34,7 +34,7 @@
         <div v-for="confession in confessions" :key="confession.ID" class="confession-item">
           <div class="confession-main">
             <router-link :to="`/user/${confession.userId}`" class="avatar-link">
-              <img :src="userProfile?.avatar || '/default-avatar.jpg'" :alt="confession.authorName" class="author-avatar">
+              <img :src="normalizeImageUrl(userProfile?.avatar) || '/default-avatar.jpg'" :alt="confession.authorName" class="author-avatar">
             </router-link>
             <div class="confession-content">
               <div class="content-main">
@@ -115,13 +115,14 @@ import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { useConfessionStore } from '@/stores/confessionStore';
 import request from '@/utils/request';
+import { normalizeImageUrl } from '@/utils/normalizeImageUrl';
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const confessionStore = useConfessionStore();
 // 优先用路由参数，没有则用当前登录用户
-const userId = ref(route.params.userId || userStore.userInfo?.data?.user_id || '');
+const userId = ref(route.params.userId || userStore.userInfo?.user_id || '');
 const userProfile = ref(null);
 const confessions = ref([]);
 const currentPage = ref(1);
@@ -129,7 +130,7 @@ const pageLimit = ref(10);
 const totalPages = ref(0);
 
 const isCurrentUserProfile = computed(() => {
-  return userStore.userInfo && userStore.userInfo.data?.user_id?.toString() === userId.value;
+  return userStore.userInfo && userStore.userInfo.user_id?.toString() === userId.value;
 });
 
 // 格式化日期
@@ -149,16 +150,23 @@ const formatDate = (dateString) => {
 // 获取用户信息
 const fetchUserProfile = async () => {
   try {
-    // 如果是当前用户，直接使用 store 中的信息
-    if (userStore.userInfo && userStore.userInfo.data?.user_id?.toString() === userId.value) {
-      userProfile.value = userStore.userInfo.data;
+    const loginUserId = userStore.userInfo?.user_id?.toString();
+    const currentId = userId.value?.toString();
+    if (loginUserId && currentId && loginUserId === currentId) {
+      // 访问自己主页，直接用 userStore.userInfo 或 /api/user/profile
+      if (userStore.userInfo) {
+        userProfile.value = userStore.userInfo;
+      } else {
+        const response = await request.get('/api/user/profile');
+        userProfile.value = response.data.data;
+      }
     } else {
-      const response = await request.get(`/api/user/profile`, {
-  params: { user_id: userId.value }
+      // 访问他人主页，调用 /api/user/detail?user_id=xxx
+      const response = await request.get('/api/user/detail', {
+        params: { user_id: currentId }
       });
-      userProfile.value = response.data;
+      userProfile.value = response.data.data;
     }
-    // 更新页面标题
     document.title = `${userProfile.value.nickname} 的个人主页 - 表白墙`;
   } catch (error) {
     console.error('获取用户信息失败:', error);
@@ -182,7 +190,7 @@ const fetchAuthorInfo = async (userId) => {
 
 const fetchConfessions = async () => {
   // user_id 判空，避免 undefined 请求
-  const uid = userId.value || userStore.userInfo?.data?.user_id;
+  const uid = userId.value || userStore.userInfo?.user_id;
   if (!uid) {
     console.warn('用户ID未获取到，无法加载表白列表');
     return;
@@ -240,7 +248,7 @@ const deleteConfessionHandler = async (confessionId) => {
       if (result.success) {
         alert('表白删除成功！');
         // 跳转到个人主页
-  router.push(`/user/${userStore.userInfo.data?.user_id}`);
+  router.push(`/user/${userStore.userInfo.user_id}`);
       } else {
         alert(result.message || '删除失败，请重试');
       }
@@ -253,7 +261,7 @@ const deleteConfessionHandler = async (confessionId) => {
 
 // 监听路由参数变化
 watch(() => route.params.userId, (newId) => {
-  userId.value = newId || userStore.userInfo?.data?.user_id || '';
+  userId.value = newId || userStore.userInfo?.user_id || '';
   currentPage.value = 1;
   fetchUserProfile();
   fetchConfessions();
@@ -265,8 +273,12 @@ watch([currentPage, pageLimit], () => {
 });
 
 // 初始化
-onMounted(() => {
-  userId.value = route.params.userId || userStore.userInfo?.data?.user_id || '';
+onMounted(async () => {
+  // 如果 userStore.userInfo 未初始化，先拉取一次
+  if (!userStore.userInfo || !userStore.userInfo.data?.user_id) {
+    await userStore.fetchUserInfo();
+  }
+  userId.value = route.params.userId || userStore.userInfo?.user_id || '';
   fetchUserProfile();
   fetchConfessions();
 });
