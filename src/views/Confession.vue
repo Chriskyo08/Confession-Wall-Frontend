@@ -20,7 +20,7 @@
                 class="avatar-link"
               >
                 <img 
-                  :src="confessionUser?.avatar || '/default-avatar.jpg'" 
+                  :src="normalizeImageUrl(confessionUser?.avatar) || '/default-avatar.jpg'" 
                   :alt="confessionUser?.nickname" 
                   class="user-avatar"
                 >
@@ -85,7 +85,7 @@
                     class="avatar-link"
                   >
                     <img 
-                      :src="comment.user?.avatar || '/default-avatar.jpg'" 
+                      :src="normalizeImageUrl(comment.user?.avatar) || '/default-avatar.jpg'" 
                       :alt="comment.user?.nickname" 
                       class="comment-avatar"
                     >
@@ -183,7 +183,7 @@
                   class="user-link"
                 >
                   <img 
-                    :src="confessionUser?.avatar || '/default-avatar.jpg'" 
+                    :src="normalizeImageUrl(confessionUser?.avatar) || '/default-avatar.jpg'" 
                     :alt="confessionUser?.nickname" 
                     class="info-avatar"
                   >
