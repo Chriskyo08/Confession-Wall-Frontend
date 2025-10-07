@@ -26,8 +26,15 @@ export const useCommentStore = defineStore('comment', () => {
     const postComment = async (postCommentRequest: PostCommentRequest) => {
         if (!token.value) {
             return { success: false, message: '未登录' };
-        } try {
-            const response = await request.post<PostCommentResponse>('/api/confession/comment', postCommentRequest);
+        }
+        // 兼容旧调用：如果传入的是 confessionId 字段，自动转换为 confession_id
+        const req: any = { ...postCommentRequest };
+        if (req.confessionId && !req.confession_id) {
+            req.confession_id = req.confessionId;
+            delete req.confessionId;
+        }
+        try {
+            const response = await request.post<PostCommentResponse>('/api/confession/comment', req);
             return {
                 success: true,
                 data: response.data,

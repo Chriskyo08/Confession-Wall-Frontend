@@ -199,9 +199,7 @@ export const useConfessionStore = defineStore('confession', () => {
         if (!token.value) {
             return { success: false, message: '未登录' };
         } try {
-            const response = await request.post<LikeConfessionResponse>(`/api/confession/like`, {
-                confession_id: confessionId
-            });
+            const response = await request.post<LikeConfessionResponse>(`/api/confession/like?confession_id=${confessionId}`);
 
             if (response.status === 200) {
                 return {

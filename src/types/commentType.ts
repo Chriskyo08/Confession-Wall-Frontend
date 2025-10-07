@@ -1,6 +1,6 @@
 // 发表评论请求
 export interface PostCommentRequest {
-    confessionId: number;
+    confession_id: number;
     content: string;
     parentId?: number; // 可选，回复评论时使用
 }
