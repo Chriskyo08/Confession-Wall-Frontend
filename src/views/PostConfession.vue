@@ -197,9 +197,9 @@ const handleImageUpload = (event) => {
     }
     
     if (file.type.startsWith('image/')) {
-      // 检查文件大小（限制为 5MB）
-      if (file.size > 5 * 1024 * 1024) {
-        alert('图片大小不能超过 5MB');
+      // 检查文件大小（限制为 15MB）
+      if (file.size > 15 * 1024 * 1024) {
+        alert('图片大小不能超过 15MB');
         return;
       }
       
